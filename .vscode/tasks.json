@@ -1,0 +1,36 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "asm-tinytro",
+			"type": "shell",
+			"command": "vasmm68k_mot",
+			"args": [
+				"tinytro.asm",
+				"-o",
+				"build\\tinytro.o",
+				"-m68000",
+				"-Fhunk",
+				"-linedebug",
+				"-ignore-mult-inc",
+				"-nowarn=2047",
+				"-nowarn=2069"
+			],
+			"group": "build"
+		},
+		{
+			"label": "build-tinytro",
+			"type": "shell",
+			"command": "vlink",
+			"args": [
+				"build\\tinytro.o",
+				"-ouae\\dh0\\tinytro",
+				"-bamigahunk",
+				"-Bstatic"
+			],
+			"group": "build",
+			"dependsOn": "asm-tinytro",
+			"problemMatcher": []
+		},
+	]
+}
