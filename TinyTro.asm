@@ -36,9 +36,9 @@ Main:
     bsr           system_disable
     ELSE
     move.w        #$7fff,d0
-    move.w        d0,$9A(a6)                           ; Disable Interrupts
-    move.w        d0,$96(a6)                           ; Clear all DMA channels
-    move.w        d0,$9C(a6)                           ; Clear all INT requests
+    move.w        d0,$9A(a6)                      ; Disable Interrupts
+    move.w        d0,$96(a6)                      ; Clear all DMA channels
+    move.w        d0,$9C(a6)                      ; Clear all INT requests
     ENDIF
     bsr           KeyboardInit
 
@@ -75,7 +75,7 @@ Main:
     rts
     ELSE
 
-    nop                                                ; this is where you're hacky bootloader lives
+    nop                                           ; this is where you're hacky bootloader lives
     
     endif
 
@@ -107,24 +107,24 @@ Init:
     lea           VBlankTick(pc),a1
     move.l        a1,$6c(a0)
 
-    move.w        #INTENASET!$C000,$9A(a6)             ; set Interrupts+ BIT 14/15
+    move.w        #INTENASET!$C000,$9A(a6)        ; set Interrupts+ BIT 14/15
 
     IF            SYSTEM_NICE=0
     move.l        $4,a6
     lea           Variables(pc),a5
     lea           graphics_name(pc),a1
     moveq         #0,d0
-    jsr           -552(a6)                             ; OpenLibrary()
+    jsr           -552(a6)                        ; OpenLibrary()
 
     move.l        d0,a6
                    
     lea           FontDef(PC),a0
     lea           FontName(PC),a1
-    move.l        a1,(a0)                              ;PC-relative, ya know!
-    jsr           -72(a6)                              ;openFont(topaz.font)
+    move.l        a1,(a0)                         ;PC-relative, ya know!
+    jsr           -72(a6)                         ;openFont(topaz.font)
     move.l        d0,a1
-    move.l        tf_CharData(a1),TopazPtr(a5)         ;fontaddr
-    move.w        tf_Modulo(a1),TopazMod(a5)           ; font mod
+    move.l        tf_CharData(a1),TopazPtr(a5)    ;fontaddr
+    move.w        tf_Modulo(a1),TopazMod(a5)      ; font mod
     ENDIF
 
     bsr           NurdleFont
@@ -208,7 +208,7 @@ VBlankTick:
 
     moveq         #$20,d0
     move.w        d0,$9c(a6)
-    move.w        d0,$9c(a6)                           ; twice to avoid a4k hw bug
+    move.w        d0,$9c(a6)                      ; twice to avoid a4k hw bug
 
     ;move.w        #$040,$dff180
     addq.w        #1,TickCounter(a5)
@@ -235,14 +235,14 @@ VBlankTick:
 BKG_COLOR         = $113
 
 cpBanner:
-    dc.w          DIWSTRT,$2c81                        ; window start stop
-    dc.w          DIWSTOP,$2cc1                        ; 192 + 8
+    dc.w          DIWSTRT,$2c81                   ; window start stop
+    dc.w          DIWSTOP,$2cc1                   ; 192 + 8
 
-    dc.w          DDFSTRT,$3c                          ; datafetch start stop 
+    dc.w          DDFSTRT,$3c                     ; datafetch start stop 
     dc.w          DDFSTOP,$d4
 
-    dc.w          BPLCON0,$a200                        ; set as 1 bp display
-    dc.w          BPLCON1,$0040                        ; set scroll 0
+    dc.w          BPLCON0,$a200                   ; set as 1 bp display
+    dc.w          BPLCON1,$0040                   ; set scroll 0
     dc.w          BPLCON2,$0000    
     dc.w          BPL1MOD,0
     dc.w          BPL2MOD,0
@@ -294,31 +294,31 @@ FontDef:
 TextProg:
     dc.l          LogoText
     dc.l          SCREEN_WIDTH_BYTE*8
-    dc.w          0                                    ; no centring
-    dc.w          6*FPS                                ; wait time
+    dc.w          0                               ; no centring
+    dc.w          6*FPS                           ; wait time
 
     dc.l          IntroText
     dc.l          SCREEN_WIDTH_BYTE*10
-    dc.w          1                                    ; centring
-    dc.w          15*FPS                               ; wait time
+    dc.w          1                               ; centring
+    dc.w          15*FPS                          ; wait time
 
     dc.l          BBSText
     dc.l          SCREEN_WIDTH_BYTE*8
-    dc.w          0                                    ; no centring
-    dc.w          6*FPS                                ; wait time
+    dc.w          0                               ; no centring
+    dc.w          6*FPS                           ; wait time
 
     dc.l          IntroText
     dc.l          SCREEN_WIDTH_BYTE*10
-    dc.w          1                                    ; centring
-    dc.w          15*FPS                               ; wait time
+    dc.w          1                               ; centring
+    dc.w          15*FPS                          ; wait time
 
-    dc.l          0                                    ; repeat
+    dc.l          0                               ; repeat
 
 MenuProg:
     dc.l          MenuText
     dc.l          SCREEN_WIDTH_BYTE*10
-    dc.w          1                                    ; centring
-    dc.w          15*FPS                               ; wait time
+    dc.w          1                               ; centring
+    dc.w          15*FPS                          ; wait time
     dc.l          0
     
     IF            SYSTEM_NICE=0
@@ -331,7 +331,7 @@ graphics_name:
 FontName:
     dc.b          "topaz.font",0
 GfxLib:	
-    dc.b          "graphics.library",0                 ;MUST BE ODD!
+    dc.b          "graphics.library",0            ;MUST BE ODD!
     even
 
 LogoText:
@@ -357,7 +357,7 @@ MenuText:
     even
 
 TuneData:
-    incbin        "C:\code\cinter\convert\tune.dat"
+    incbin        "tune.dat"
 
 ; ram area
 
