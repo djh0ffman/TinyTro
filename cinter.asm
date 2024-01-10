@@ -134,7 +134,7 @@ CinterMakeInstruments:
 
                      clr.w      (a4)+
                      subq.l     #2,d5
-                     moveq.l    #0,d6                          ; Index
+                     moveq.l    #0,d6                                    ; Index
 .sampleloop:
 
 	; Distortion parameters
@@ -169,7 +169,7 @@ CinterMakeInstruments:
                      move.l     (a1)+,d0
                      lsr.l      #2,d0
                      LONGMUL
-                     sub.l      d3,d0                          ; Modulation
+                     sub.l      d3,d0                                    ; Modulation
 .bdist:              lsr.w      #2,d0
                      add.w      d0,d0
                      move.w     (a0,d0.w),d0
@@ -179,7 +179,7 @@ CinterMakeInstruments:
 
 	; Amplitude
                      move.w     (a1)+,d1
-.vpower:             muls.w     0(a1),d0                       ; Dummy offset for better compression
+.vpower:             muls.w     0(a1),d0                                 ; Dummy offset for better compression
                      add.l      d0,d0
                      swap.w     d0
                      sub.w      #$1000,d4
@@ -216,7 +216,7 @@ CinterMakeInstruments:
                      rept       3
                      move.l     (a1),d0
                      move.w     (a3)+,d2
-                     beq.b      *+22                           ; Optimization, can be omitted
+                     beq.b      *+22                                     ; Optimization, can be omitted
                      LONGMUL
                      tst.w      d2
                      bmi.b      *+4
@@ -319,7 +319,7 @@ CinterPlay2:
 .channelloop:
                      move.l     (a0)+,d3
                      move.l     (a0)+,a4
-                     move.l     (a0),d2                        ; Period|Volume
+                     move.l     (a0),d2                                  ; Period|Volume
                      move.w     (a1),d0
                      add.w      d1,a1
                      bmi.b      .trigger
@@ -366,6 +366,18 @@ CinterPlay2:
 
 	; Set instrument
                      lea        c_Instruments(a6),a5
+
+                     if         SYNC_FX=1
+                     cmp.w      #3*8,d3
+                     bne        .skipkick
+                     move.w     #SYNC_COL_COUNT-2,Variables+SyncKick
+.skipkick
+                     cmp.w      #4*8,d3
+                     bne        .skipsnare
+                     move.w     #SYNC_COL_COUNT-2,Variables+SyncSnare
+.skipsnare
+                     endif
+
                      add.w      d3,a5
 
 	; Read sample address, length and repeat
@@ -392,9 +404,9 @@ CinterPlay2:
 
 	; Write to audio registers
                      subq.l     #6,a3
-                     move.l     d2,-(a3)                       ; Period|Volume
-                     move.w     d3,-(a3)                       ; Length
-                     move.l     a4,-(a3)                       ; Pointer
+                     move.l     d2,-(a3)                                 ; Period|Volume
+                     move.w     d3,-(a3)                                 ; Length
+                     move.l     a4,-(a3)                                 ; Pointer
                      dbf        d7,.channelloop
 
                      ifeq       CINTER_MANUAL_DMA

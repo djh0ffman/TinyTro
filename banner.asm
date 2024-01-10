@@ -19,13 +19,14 @@ HoffBannerLogic:
     dc.w          HoffBannerShow2a-.i
     dc.w          HoffBannerBye-.i
     dc.w          HoffBannerBye2-.i
+    IF            MENU_ON=1
     dc.w          HoffBannerInit-.i
     dc.w          HoffBannerReveal-.i
     dc.w          HoffBannerMenuWait-.i
     dc.w          HoffBannerMenu-.i
     dc.w          HoffBannerBye-.i
     dc.w          HoffBannerByeExit-.i
-
+    ENDIF
 
 HoffBannerInit:
     bsr           HoffBannerCycleProg
@@ -366,13 +367,19 @@ HoffBannerBye2:
     bsr           HoffBannerPrint
     bsr           HoffBannerTest
     bne           .notyet
+
+    IF            MENU_ON=1
     addq.w        #1,TitleStatus(a5)
     move.l        #MenuProg,TextProgPtr(a5)
     bsr           HoffBannerInit
+    ELSE
+    move.w        #1,Exit(a5)
+    ENDIF
+
 .notyet
     rts
 
-
+    IF            MENU_ON=1
 HoffBannerByeExit:
     bsr           HoffBannerPrint
     bsr           HoffBannerTest
@@ -389,7 +396,11 @@ HoffBannerMenuWait:
     clr.b         KeyUp(a5)
     clr.b         KeyDown(a5)
     clr.b         KeyEnter(a5)
+    if            MENU_SELECT=0
     move.w        #MENU_COUNT-1,OptionId(a5)
+    ELSE
+    clr.w         OptionId(a5)
+    ENDIF
 .notyet
     rts
 
@@ -421,18 +432,21 @@ HoffBannerMenu:
     beq           .skipenter
     clr.b         KeyEnter(a5)
 
+    IF            MENU_SELECT=0
     move.w        OptionId(a5),d0
     cmp.w         #MENU_COUNT-1,d0
     bne           .noexit
+    ENDIF
     addq.w        #1,TitleStatus(a5)
     move.w        #BKG_COLOR,cpSelect+6
     bra           .byebye
 .noexit
+    IF            MENU_SELECT=0
     moveq         #1,d1
     lsl.l         d0,d1
     eor.l         d1,Options(a5)
     bsr           HoffBannerPrintOption
-
+    ENDIF
 .skipenter
     bsr           HoffBannerShowSelected
 .byebye
@@ -504,6 +518,7 @@ HoffBannerShowSelected:
     move.b        d0,8(a0)
     move.w        #0,6(a0)
     rts
+    ENDIF
 
 HoffBannerTest:
     lea           HoffBanItems(a5),a0

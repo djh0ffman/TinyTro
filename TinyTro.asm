@@ -1,5 +1,31 @@
 ; -------------------------------------------------------
-; tiny tro
+;
+; TTE - tinytro
+;
+; Code  : h0ffman
+; Music : h0ffman
+; ASCII : ne7 & FuZion
+; Synth : Blueberry
+;
+; READ THIS STUFF
+;
+; Builds with VASM by hand or use the built in VSCode build task
+;
+; The VSCode launch config has a %%PATH%% variable to point to 
+; kickstart roms when using VSCode Amiga Assembly Plugin
+;
+; https://marketplace.visualstudio.com/items?itemName=prb28.amiga-assembly
+;
+; Display text needs to be AMIGA ASCII format. If in doubt open it 
+; in Notepad++ and run EOL conversion to UNIX.  NO TABS!!
+;
+; version-ish
+;
+; 2024-01-10
+; SYNC FX on bars
+; new menu functions
+; some better comments
+;
 ; -------------------------------------------------------
 
     INCDIR        "include"
@@ -18,19 +44,28 @@ CIAA              = $00bfe001
 
 DMACONSET         = %1000001110000000
 
-DISABLE_MUSIC     = 0             
-SYSTEM_NICE       = 1
+SYSTEM_NICE       = 1                             ; 0 = fuck the OS for less code and force to $40000 : 1 = be nice to the OS and return gracefully
+
+MENU_LINE         = 4                             ; text line menu starts on
+MENU_COUNT        = 9                             ; count of menu items
+MENU_ON           = 1                             ; include all code required for menu selection
+MENU_SELECT       = 1                             ; 0 = options on / off : 1 = pack menu selection
+
+SYNC_FX           = 1                             ; include code for top and bottom bar music sync
+
+DISABLE_MUSIC     = 0                             ; disables music calls for quicker debugging
 
     IF            SYSTEM_NICE=0
     org           $40000
     ENDIF
 
 Main:
-                     ;movem.l    d0-a6,-(sp)
+    IF            SYSTEM_NICE=1
     PUSHALL
+    ENDIF
 
     lea           CUSTOM,a6
-    lea           Variables(pc),a5
+    lea           Variables,a5
 
     IF            SYSTEM_NICE=1
     bsr           system_disable
@@ -40,7 +75,10 @@ Main:
     move.w        d0,$96(a6)                      ; Clear all DMA channels
     move.w        d0,$9C(a6)                      ; Clear all INT requests
     ENDIF
+
+    IF            MENU_ON=1
     bsr           KeyboardInit
+    ENDIF
 
     bsr           Init
 
@@ -67,17 +105,20 @@ Main:
     tst.w         Exit(a5)
     beq           .mainloop
 
+    ; graceful system exit with no bootloader
     IF            SYSTEM_NICE=1
-    bsr           system_enable
     bsr           KeyboardRemove
+    bsr           system_enable
     POPALL
-    moveq         #0,d0
     rts
     ELSE
 
-    nop                                           ; this is where you're hacky bootloader lives
-    
-    endif
+    ; exit point for disabled system and bootloader
+    move.w        OptionId(a5),d0                 ; this value is the selected item from the list
+    move.l        Options(a5),d0                  ; bit flags from options menu
+    RESET
+    ENDIF
+
 
 
 Init:
@@ -111,7 +152,7 @@ Init:
 
     IF            SYSTEM_NICE=0
     move.l        $4,a6
-    lea           Variables(pc),a5
+    lea           Variables,a5
     lea           graphics_name(pc),a1
     moveq         #0,d0
     jsr           -552(a6)                        ; OpenLibrary()
@@ -204,7 +245,7 @@ VBlankTick:
     PUSHALL
 
     lea           CUSTOM,a6                   
-    lea           Variables(pc),a5
+    lea           Variables,a5
 
     moveq         #$20,d0
     move.w        d0,$9c(a6)
@@ -213,6 +254,11 @@ VBlankTick:
     ;move.w        #$040,$dff180
     addq.w        #1,TickCounter(a5)
     bsr           CinterPlayMine
+
+    if            SYNC_FX=1
+    bsr           Sync
+    endif
+
     tst.w         FrameActive(a5)
     bne           .norun
 
@@ -223,6 +269,11 @@ VBlankTick:
     rte
 
 
+
+    if            SYNC_FX=1
+    include       "sync.asm"
+    endif
+
     include       "banner.asm"
     include       "keyboard.asm"
     include       "cinter.asm"
@@ -230,6 +281,7 @@ VBlankTick:
     IF            SYSTEM_NICE=1
     include       "os_kill.asm"
     ENDIF
+
 
 
 BKG_COLOR         = $113
@@ -259,6 +311,7 @@ cpBannerPlanes:
 
     ; top lines
     dc.w          $27ff,$fffe
+cpKickColor:
     dc.w          COLOR00,$a22
     dc.w          $28ff,$fffe
     dc.w          COLOR00,$000
@@ -278,6 +331,7 @@ cpSelect:
     dc.w          $2eff,$fffe
     dc.w          COLOR00,$000
     dc.w          $2fff,$fffe
+cpSnareColor:
     dc.w          COLOR00,$a22
     dc.w          $30ff,$fffe
     dc.w          COLOR00,$000
@@ -300,27 +354,30 @@ TextProg:
     dc.l          IntroText
     dc.l          SCREEN_WIDTH_BYTE*10
     dc.w          1                               ; centring
-    dc.w          15*FPS                          ; wait time
+    dc.w          18*FPS                          ; wait time
 
     dc.l          BBSText
     dc.l          SCREEN_WIDTH_BYTE*8
     dc.w          0                               ; no centring
     dc.w          6*FPS                           ; wait time
 
-    dc.l          IntroText
+    dc.l          MembersText
     dc.l          SCREEN_WIDTH_BYTE*10
     dc.w          1                               ; centring
     dc.w          15*FPS                          ; wait time
 
     dc.l          0                               ; repeat
 
+    IF            MENU_ON=1
 MenuProg:
     dc.l          MenuText
     dc.l          SCREEN_WIDTH_BYTE*10
     dc.w          1                               ; centring
     dc.w          15*FPS                          ; wait time
     dc.l          0
-    
+    ENDIF
+
+
     IF            SYSTEM_NICE=0
 graphics_name:   
     dc.b          'graphics.library',0
@@ -348,8 +405,10 @@ IntroText:
     dc.b          0
     even
 
-MENU_LINE         = 11
-MENU_COUNT        = 2
+MembersText:
+    incbin        "tte-members.txt"
+    dc.b          0
+    even
 
 MenuText:
     incbin        "menu.txt"
@@ -379,8 +438,8 @@ ScreenMem:
     dcb.b         HOFFBANNER_PLANE_SIZE,0
 
 InstrumentSpace:
-    dcb.b         44604
+    dcb.b         44604,0
 Work:
-    dcb.b         $8000
-
+    dcb.b         c_SIZE,0
+WorkEnd:
     dc.b          "END!"

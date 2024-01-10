@@ -56,6 +56,9 @@ LineCount:                 rs.w       1
 WaitTime:                  rs.w       1
 Exit:                      rs.w       1
 
+SyncKick:                  rs.w       1
+SyncSnare:                 rs.w       1
+
 Options:                   rs.l       1
 OptionId:                  rs.w       1
 

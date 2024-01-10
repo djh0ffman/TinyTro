@@ -72,9 +72,8 @@ KeyboardRemove:
                   rts	
 
 KeyboardInterrupt:        
-                  movem.l      d0-d1/a0-a2,-(a7)
-	
-                  lea          Variables(pc),a5
+                  PUSHALL
+                  lea          Variables,a5
 
                   lea          $dff000,a0
                   move.w       intreqr(a0),d0
@@ -116,7 +115,7 @@ KeyboardPatchPtr:
                   nop
                   nop
 
-                  movem.l      (a7)+,d0-d1/a0-a2
+                  POPALL
                   rte
 
 Keys:             dcb.b        $80,0

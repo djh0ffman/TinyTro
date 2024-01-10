@@ -23,7 +23,7 @@ DMASET       = %1000001000000000
 
 system_disable:     
                    move.l     $4,a6
-                   lea        Variables(pc),a5
+                   lea        Variables,a5
                    lea        graphics_name(pc),a1
                    moveq      #0,d0
                    jsr        -552(a6)                        ; OpenLibrary()
@@ -76,7 +76,7 @@ system_disable:
                    move.l     d0,SPR0DATA(a6)
                    rts
 
-system_enable:     lea        Variables(pc),a5
+system_enable:     lea        Variables,a5
                    lea        $dff000,a6
                    clr.l      vblank_pointer(a5)
 
@@ -144,7 +144,7 @@ wait_raster:       move.l     d0,-(a7)
 vblank_server:     movem.l    d0-a6,-(a7)
 
                    lea        CUSTOM,a6                   
-                   lea        Variables(pc),a5
+                   lea        Variables,a5
 
                    lea        $dff09c,a6
                    moveq      #$20,d0

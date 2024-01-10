@@ -1,25 +1,22 @@
 
+
+
 THE TWITCH ELITE
 
 : PRESENTS :
 
--= THE INTRO =-
+-= Tinytro Update =-
 
-- Tiny Intro Credits -
+:--------CREDITS--------:
+: Code   : h0ffman      :
+: Music  : h0ffman      :
+: ASCII  : ne7 & FuZioN :
+: Synth  : Blueberry    :
+:-----------------------:
 
-: Code and Music - h0ffman   :
-:   Cinter Synth - Blueberry :
-:           Logo - NE7       :
+- Updates -
 
-.. links ..
+Menu system for trainer of pack menu selection
+Top and bottom bar sync FX
+More code comments
 
-twitch.tv/djh0ffman
-www.youtube.com/hoffmanyoutube
-twitter.com/djh0ffman
-mas.to/@h0ffman
-bsky.app/profile/h0ffman.bsky.social
-hoffman.home.blog
-hoffman.bandcamp.com
-soundcloud.com/h0ffman
-www.mixcloud.com/h0ffman
-h0ffman.itch.io
