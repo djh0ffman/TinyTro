@@ -1,6 +1,5 @@
 
 
-
 THE TWITCH ELITE
 
 : PRESENTS :
@@ -19,4 +18,6 @@ THE TWITCH ELITE
 Menu system for trainer of pack menu selection
 Top and bottom bar sync FX
 More code comments
+Original protracker file
 
+Get the code at https://github.com/djh0ffman/TinyTro
