@@ -392,31 +392,31 @@ GfxLib:
     even
 
 LogoText:
-    incbin        "ne7-tte.txt"
+    incbin        "text/ne7-tte.txt"
     dc.b          0
     even
 
 BBSText:
-    incbin        "r32_bbs_ad2.txt"
+    incbin        "text/r32_bbs_ad2.txt"
     dc.b          0
 
 IntroText:
-    incbin        "intro-text.txt"
+    incbin        "text/intro-text.txt"
     dc.b          0
     even
 
 MembersText:
-    incbin        "tte-members.txt"
+    incbin        "text/tte-members.txt"
     dc.b          0
     even
 
 MenuText:
-    incbin        "menu.txt"
+    incbin        "text/menu.txt"
     dc.b          0
     even
 
 TuneData:
-    incbin        "tune.dat"
+    incbin        "assets/tune.dat"
 
 ; ram area
 
