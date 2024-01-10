@@ -15,7 +15,7 @@ THE TWITCH ELITE
 
 - Updates -
 
-Menu system for trainer of pack menu selection
+Menu system for trainer or pack menu selection
 Top and bottom bar sync FX
 More code comments
 Original protracker file
