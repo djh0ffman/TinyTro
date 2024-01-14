@@ -46,10 +46,12 @@ DMACONSET         = %1000001110000000
 
 SYSTEM_NICE       = 1                             ; 0 = fuck the OS for less code and force to $40000 : 1 = be nice to the OS and return gracefully
 
+MENU_ON           = 1                             ; include all code required for menu selection
+    IF            MENU_ON=1
 MENU_LINE         = 4                             ; text line menu starts on
 MENU_COUNT        = 9                             ; count of menu items
-MENU_ON           = 1                             ; include all code required for menu selection
 MENU_SELECT       = 1                             ; 0 = options on / off : 1 = pack menu selection
+    ENDIF
 
 SYNC_FX           = 1                             ; include code for top and bottom bar music sync
 
@@ -107,7 +109,9 @@ Main:
 
     ; graceful system exit with no bootloader
     IF            SYSTEM_NICE=1
+    IF            MENU_ON=1
     bsr           KeyboardRemove
+    ENDIF
     bsr           system_enable
     POPALL
     rts
@@ -275,7 +279,9 @@ VBlankTick:
     endif
 
     include       "banner.asm"
+    IF            MENU_ON=1
     include       "keyboard.asm"
+    ENDIF
     include       "cinter.asm"
 
     IF            SYSTEM_NICE=1
@@ -410,10 +416,12 @@ MembersText:
     dc.b          0
     even
 
+    IF            MENU_ON=1
 MenuText:
     incbin        "text/menu.txt"
     dc.b          0
     even
+    ENDIF
 
 TuneData:
     incbin        "assets/tune.dat"
