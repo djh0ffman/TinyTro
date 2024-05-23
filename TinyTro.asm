@@ -5,11 +5,11 @@
 ; Code  : h0ffman
 ; Music : h0ffman
 ; ASCII : ne7 & FuZion
-; Synth : Blueberry
+; Synth : Blueberry  -> https://github.com/askeksa/Cinter
 ;
 ; READ THIS STUFF
 ;
-; Builds with VASM by hand or use the built in VSCode build task
+; Builds with VASM by hand or use the built in VSCode build tasks
 ;
 ; The VSCode launch config has a %%PATH%% variable to point to 
 ; kickstart roms when using VSCode Amiga Assembly Plugin
@@ -20,6 +20,14 @@
 ; in Notepad++ and run EOL conversion to UNIX.  NO TABS!!
 ;
 ; version-ish
+;
+; 2024-05-23
+;  
+;
+; 2024-01-22
+; CINTER JIT added, marginal reduction on audio pre-calc -> https://github.com/deetsay/Cinter 
+; moved non-system boot loader code to separate file
+; added tinytro-bin build task to spit out a raw bin file
 ;
 ; 2024-01-10
 ; SYNC FX on bars
@@ -45,11 +53,12 @@ CIAA              = $00bfe001
 DMACONSET         = %1000001110000000
 
 SYSTEM_NICE       = 1                             ; 0 = fuck the OS for less code and force to $40000 : 1 = be nice to the OS and return gracefully
+CINTERJIT         = 1                             ; 0 = Standard / 1 = JIT 
 
 MENU_ON           = 1                             ; include all code required for menu selection
     IF            MENU_ON=1
-MENU_LINE         = 4                             ; text line menu starts on
-MENU_COUNT        = 9                             ; count of menu items
+MENU_LINE         = 9                             ; text line menu starts on
+MENU_COUNT        = 4                             ; count of menu items
 MENU_SELECT       = 1                             ; 0 = options on / off : 1 = pack menu selection
     ENDIF
 
@@ -60,6 +69,12 @@ DISABLE_MUSIC     = 0                             ; disables music calls for qui
     IF            SYSTEM_NICE=0
     org           $40000
     ENDIF
+
+; -------------------------------------------------------
+;
+; Main - entry point
+;
+; -------------------------------------------------------
 
 Main:
     IF            SYSTEM_NICE=1
@@ -117,12 +132,17 @@ Main:
     rts
     ELSE
 
-    ; exit point for disabled system and bootloader
-    move.w        OptionId(a5),d0                 ; this value is the selected item from the list
-    move.l        Options(a5),d0                  ; bit flags from options menu
+    include       "boot.asm"
+
     RESET
     ENDIF
 
+
+; -------------------------------------------------------
+;
+; Init - setup screen and music pre-calc
+;
+; -------------------------------------------------------
 
 
 Init:
@@ -176,6 +196,12 @@ Init:
 
     rts
 
+; -------------------------------------------------------
+;
+; NurdleFont - re-ogranises system topaz font for quicker drawing
+;
+; -------------------------------------------------------
+
 FONT_CHAR_COUNT   = 224
 
 NurdleFont:
@@ -197,6 +223,11 @@ NurdleFont:
     dbra          d7,.charloop
     rts
 
+; -------------------------------------------------------
+;
+; PrepRand - generates small set of random numbers
+;
+; -------------------------------------------------------
 
 RAND_MAX          = 80+32
 
@@ -211,11 +242,20 @@ PrepRand:
     rts
 
 
+; -------------------------------------------------------
+;
+; CinterInitMine - music init
+;
+; -------------------------------------------------------
+
 CinterInitMine:
     IF            DISABLE_MUSIC=1
     rts
     ENDIF
     PUSHALL
+
+  ;------------ Standard Cinter INIT
+    IF            CINTERJIT=0
 	; A2 = Music data
 	; A4 = Instrument space
 	; A6 = Cinter working memory 
@@ -223,8 +263,40 @@ CinterInitMine:
     lea           InstrumentSpace,a4
     lea           Work,a6
     bsr.w         CinterInit    
+    ELSE
+
+  ;------------ Cinter JIT INIT
+    lea           TuneData,a2
+    lea           InstrumentSpace,a4
+    lea           Work,a6
+    lea           Cinter_JITcode,a3
+		; A2 = Music data
+		; A3 = Cinter JITCode
+		; A4 = Instrument space
+		; A6 = Cinter working memory
+    jsr           CinterInit(pc)
+
+    lea           Work,a6
+
+    jsr           Cinter_JITcode+($0*$200)
+    jsr           Cinter_JITcode+($1*$200)
+    jsr           Cinter_JITcode+($2*$200)
+    jsr           Cinter_JITcode+($3*$200)
+    jsr           Cinter_JITcode+($4*$200)
+    jsr           Cinter_JITcode+($5*$200)
+    jsr           Cinter_JITcode+($6*$200)
+    jsr           Cinter_JITcode+($7*$200)
+
+    ENDIF
+
     POPALL
     rts
+
+; -------------------------------------------------------
+;
+; CinterPlayMine - play music
+;
+; -------------------------------------------------------
 
 CinterPlayMine:
     IF            DISABLE_MUSIC=1
@@ -273,6 +345,11 @@ VBlankTick:
     rte
 
 
+; -------------------------------------------------------
+;
+; includes - other code
+;
+; -------------------------------------------------------
 
     if            SYNC_FX=1
     include       "sync.asm"
@@ -282,12 +359,23 @@ VBlankTick:
     IF            MENU_ON=1
     include       "keyboard.asm"
     ENDIF
+
+    IF            CINTERJIT=0
     include       "cinter.asm"
+    ELSE
+    include       "Cinter4JIT.asm"
+    ENDIF
 
     IF            SYSTEM_NICE=1
     include       "os_kill.asm"
     ENDIF
 
+
+; -------------------------------------------------------
+;
+; Copper list and the rest of the data
+;
+; -------------------------------------------------------
 
 
 BKG_COLOR         = $113
@@ -444,6 +532,12 @@ ScreenOffset:
     dcb.b         SCREEN_WIDTH_BYTE*4
 ScreenMem:
     dcb.b         HOFFBANNER_PLANE_SIZE,0
+
+
+    IF            CINTERJIT=1
+Cinter_JITcode:
+    dcb.w         $100*31,0
+    ENDIF
 
 InstrumentSpace:
     dcb.b         44604,0
