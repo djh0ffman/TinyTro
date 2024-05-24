@@ -34,44 +34,29 @@ CinterInit:
 
 CinterMakeSinus:
                      lea        c_Sinus(a6),a0
-                     addq.l     #2,a0
-                     lea.l      CINTER_DEGREES/2*2-2(a0),a1
-
-                     moveq.l    #1,d7
-.loop:
-                     move.w     d7,d1
-                     mulu.w     d7,d1
-                     lsr.l      #8,d1
-
-                     move.w     #2373,d0
-                     mulu.w     d1,d0
-                     swap.w     d0
-                     neg.w      d0
-                     add.w      #21073,d0
-                     mulu.w     d1,d0
-                     swap.w     d0
-                     neg.w      d0
-                     add.w      #51469,d0
-                     mulu.w     d7,d0
-                     lsr.l      #8,d0
-                     lsr.l      #5,d0
-
-                     move.w     d0,(a0)+
-                     move.w     d0,-(a1)
-                     neg.w      d0
-                     move.w     d0,CINTER_DEGREES/2*2-2(a0)
-                     move.w     d0,CINTER_DEGREES/2*2(a1)
-
-                     addq.w     #1,d7
-                     cmp.w      #CINTER_DEGREES/4,d7
-                     blt.b      .loop
-
-                     move.w     #16384,d0
-                     move.w     d0,(a0)+
-                     move.w     d0,-(a1)
-                     neg.w      d0
-                     move.w     d0,CINTER_DEGREES/2*2-2(a0)
-                     move.w     d0,CINTER_DEGREES/2*2(a1)
+                     lea.l      CINTER_DEGREES/2*2(a0),a1
+                     moveq      #0,d0
+                     move.l     #$4000000,d1
+                     move.w     #CINTER_DEGREES/4-1,d7
+loop:                move.l     d1,d2
+                     asl.l      #4,d2
+                     swap       d2
+                     ext.l      d2
+                     add.l      d2,d0
+                     move.l     d0,d2
+                     asl.l      #4,d2
+                     swap       d2
+                     ext.l      d2
+                     sub.l      d2,d1
+                     add.b      #163,d3
+                     bcc        loop
+                     move.w     d2,d4
+                     neg.w      d4
+                     move.w     d2,(a0)+
+                     move.w     d4,CINTER_DEGREES/2*2-2(a0)
+                     move.w     d4,CINTER_DEGREES/2*2-2(a1)
+                     move.w     d2,-(a1)
+                     dbra.w     d7,loop
 
 ; Sample parameters:
 ; short length, replength
